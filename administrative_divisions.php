@@ -1,0 +1,68 @@
+<?php
+include 'config.php';
+
+// Default country code
+$countryCode = isset($_GET['country']) ? $_GET['country'] : 'sv';
+
+$url = 'https://wildtracks.pro/api/administrative_division/all/' . $countryCode . '/json/' . $TOKEN;
+
+// Получаем данные
+$jsonData = file_get_contents($url);
+if ($jsonData === false) die('Error receiving data');
+
+$dataArray = json_decode($jsonData, true);
+if ($dataArray === null) die('Error decoding JSON');
+
+// Типы административных делений
+$featureTypes = [
+'ADM1' => 'first-order administrative division	a primary administrative division of a country, such as a state in the United States',
+'ADM1H' => 'historical first-order administrative division	a former first-order administrative division',
+'ADM2' => 'second-order administrative division	a subdivision of a first-order administrative division',
+'ADM2H' => 'historical second-order administrative division	a former second-order administrative division',
+'ADM3' => 'third-order administrative division	a subdivision of a second-order administrative division',
+'ADM3H' => 'historical third-order administrative division	a former third-order administrative division',
+'ADM4' => 'fourth-order administrative division	a subdivision of a third-order administrative division',
+'ADM4H' => 'historical fourth-order administrative division	a former fourth-order administrative division',
+'ADM5' => 'fifth-order administrative division	a subdivision of a fourth-order administrative division',
+'ADM5H' => 'historical fifth-order administrative division	a former fifth-order administrative division',
+'ADMD' => 'administrative division	an administrative division of a country, undifferentiated as to administrative level',
+'ADMDH' => 'historical administrative division 	a former administrative division of a political entity, undifferentiated as to administrative level',
+'ADMS' => 'school district	school district',
+'LTER' => 'leased area	a tract of land leased to another country, usually for military installations',
+'PCL' => 'political entity',	
+'PCLD' => 'dependent political entity',	
+'PCLF' => 'freely associated state',	
+'PCLH' => 'historical political entity	a former political entity',
+'PCLI' => 'independent political entity',	
+'PCLIX' => 'section of independent political entity',	
+'PCLS' => 'semi-independent political entity',	
+'PRSH' => 'parish	an ecclesiastical district',
+'TERR' => 'territory',	
+'ZN' => 'zone',	
+'ZNB' => 'buffer zone	a zone recognized as a buffer between two nations in which military presence is minimal or absent'
+];
+
+echo "<table border='1' cellpadding='5'>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Elevation</th>
+            <th>Timezone</th>
+        </tr>";
+
+foreach ($dataArray as $item) {
+    $typeCode = $item['feature_code'];
+    $typeDesc = isset($featureTypes[$typeCode]) ? $featureTypes[$typeCode] : 'Unknown';
+    echo "<tr>
+            <td>{$item['name']}</td>
+            <td>{$typeCode} - {$typeDesc}</td>
+            <td>{$item['latitude']}</td>
+            <td>{$item['longitude']}</td>
+            <td>{$item['dem']}</td>
+            <td>{$item['timezone']}</td>
+          </tr>";
+}
+echo "</table>";
+?>
